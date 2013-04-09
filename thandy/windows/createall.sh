@@ -7,66 +7,57 @@ function rm_noerror {
 }
 
 function populateContents {
-    content_prefix=../../package_contents/linux/
+    content_prefix=../../package_contents/windows/
 
     # eip
-    # Ignored, shouldn't change too much
+    rm_noerror ${content_prefix}/eip*
+    mkdir -p ${content_prefix}/eip-win/apps/eip
+    cp -r ../../windows_binaries/openvpn/* ${content_prefix}/eip-win/apps/eip
 
     # launcher
-    rm -rf ${content_prefix}/launcher/*
-    mkdir -p ${content_prefix}/launcher/apps/
-    cp ../../leap_client_launcher/src/launcher.py ${content_prefix}/launcher/apps/
-    cp ../../leap_client_launcher/build/src/launcher ${content_prefix}/launcher/
-    mkdir ${content_prefix}/launcher/packages/
-    touch ${content_prefix}/launcher/packages/.keep
+    rm_noerror ${content_prefix}/launcher*
+    mkdir -p ${content_prefix}/launcher-win/apps/
+    cp ../../leap_client_launcher/src/launcher.py ${content_prefix}/launcher-win/apps/
+    cp ../../windows_binaries/launcher/launcher.exe ${content_prefix}/launcher-win/
+    mkdir ${content_prefix}/launcher-win/packages/
+    touch ${content_prefix}/launcher-win/packages/.keep
 
-    # leap_client
-    rm_noerror ${content_prefix}/leap/*
-    mkdir -p ${content_prefix}/leap/apps/
-    cp -rf ../../leap_client/src/leap ${content_prefix}/leap/apps/
-
-    # leap_pycommon
-    rm_noerror ${content_prefix}/leap_pycommon/*
-    mkdir -p ${content_prefix}/leap_pycommon/lib/
-    cp -rf ../../leap_pycommon/src/leap ${content_prefix}/leap_pycommon/lib/
+    # leap_client (we use the same than in linux)
+    # leap_pycommon (we use the same than in linux)
 
     # libBoost
-    rm_noerror ${content_prefix}/libBoost/lib
-    mkdir -p ${content_prefix}/libBoost/lib/
-    cp /home/chiiph/Downloads/boost_1_53_0/stage/lib/libboost_filesystem-gcc47-mt-1_53.so.1.53.0 ${content_prefix}/libBoost/lib/
-    cp /home/chiiph/Downloads/boost_1_53_0/stage/lib/libboost_python-gcc47-mt-1_53.so.1.53.0 ${content_prefix}/libBoost/lib/
-    cp /home/chiiph/Downloads/boost_1_53_0/stage/lib/libboost_system-gcc47-mt-1_53.so.1.53.0 ${content_prefix}/libBoost/lib/
+    rm_noerror ${content_prefix}/libBoost*
+    mkdir -p ${content_prefix}/libBoost-win/
+    cp ../../windows_binaries/boost/* ${content_prefix}/libBoost-win/
 
     # libOpenSSL
-    rm_noerror ${content_prefix}/libOpenSSL/lib
-    mkdir -p ${content_prefix}/libOpenSSL/lib
-    cp ../../leap_client_launcher/build/LEAPClient/lib/lib{lzo,pkcs11}*.so* ${content_prefix}/libOpenSSL/lib/
+    rm_noerror ${content_prefix}/libOpenSSL*
+    mkdir -p ${content_prefix}/libOpenSSL-win/Lib/OpenSSL
+    cp ../../windows_binaries/openssl/Lib/OpenSSL/* ${content_prefix}/libOpenSSL-win/Lib/OpenSSL/
 
     # libPySide
-    rm_noerror ${content_prefix}/libPySide/lib
-    mkdir -p ${content_prefix}/libPySide/lib/
-    cp ../../leap_client_launcher/build/LEAPClient/lib/lib{pyside,shiboken}*.so* ${content_prefix}/libPySide/lib/
+    rm_noerror ${content_prefix}/libPySide*
+    mkdir -p ${content_prefix}/libPySide-win
+    cp ../../windows_binaries/pyside/* ${content_prefix}/libPySide-win/
 
+    # TODO: no need for two openssl packages here
     # OpenSSL
-    rm_noerror ${content_prefix}/OpenSSL/lib
-    mkdir -p ${content_prefix}/OpenSSL/lib
-    cp -r ../../leap_client_launcher/build/LEAPClient/lib/OpenSSL ${content_prefix}/OpenSSL/lib/
+    rm_noerror ${content_prefix}/OpenSSL*
+    mkdir -p ${content_prefix}/OpenSSL-win/Lib/OpenSSL
+    cp -r ../../windows_binaries/pyopenssl/Lib/OpenSSL/* ${content_prefix}/OpenSSL-win/Lib/OpenSSL/
 
     # PyDeps
-    rm_noerror ${content_prefix}/PyDeps/lib
-    mkdir -p ${content_prefix}/PyDeps/lib
-    cp -r ../../leap_client_launcher/build/LEAPClient/lib/* ${content_prefix}/PyDeps/lib/
-    rm_noerror ${content_prefix}/PyDeps/lib/{libboost*,liblzo*,libpkcs*,libpyside*,libshiboken*,OpenSSL,PySide}
+    rm_noerror ${content_prefix}/PyDeps*
+    mkdir -p ${content_prefix}/PyDeps-win/Lib
+    cp -r ../../windows_binaries/pydeps/Lib/* ${content_prefix}/PyDeps-win/Lib/
+    rm_noerror ${content_prefix}/PyDeps-win/Lib/{OpenSSL,PySide}
 
     # PySide
-    rm_noerror ${content_prefix}/PySide/lib
-    mkdir -p ${content_prefix}/PySide/lib
-    cp -r ../../leap_client_launcher/build/LEAPClient/lib/PySide ${content_prefix}/PySide/lib/
+    rm_noerror ${content_prefix}/PySide*
+    mkdir -p ${content_prefix}/PySide-win/Lib
+    cp -r ../../windows_binaries/pypyside/Lib/* ${content_prefix}/PySide-win/Lib/
 
-    # thandy
-    rm_noerror ${content_prefix}/thandy/apps
-    mkdir -p ${content_prefix}/thandy/apps
-    cp -r ../../thandy/lib/thandy ${content_prefix}/thandy/apps/
+    # thandy (we use the same as for linux)
 }
 
 function createThpConfig {
@@ -76,8 +67,8 @@ function createThpConfig {
         thpconfig \
         --thp_name=$1 \
         --version_list=${versions[$1]} \
-        --scan=../../package_contents/linux/$1/ \
-        --os=linux \
+        --scan=../../package_contents/windows/$1/ \
+        --os=win \
         --arch=x86 \
         --generate_file_list=1 \
         --scripts=$2
@@ -90,9 +81,9 @@ function createThp {
     PYTHONPATH=~/Code/leap/thandy/lib/ python ../../thandy/lib/thandy/ThpCLI.py \
         makethppackage \
         $1/*_thp.cfg \
-        ../../package_contents/linux/$1/ \
+        ../../package_contents/windows/$1/ \
         $1/ \
-        ../../package_scripts/linux/$1/
+        ../../package_scripts/windows/$1/
     cp $1/*.thp ../../repo/data/
 }
 
@@ -153,7 +144,8 @@ function makeBundle {
     # $1 keyid
     # $2 bundle name
     bundle_config=$(echo $2*_bundle.cfg)
-    packages=$(echo */*.txt)
+    packages=$(echo */*.txt)" "$(echo ../linux/{leap,thandy,leap_pycommon}/*.txt)
+    echo "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ${packages}"
     PYTHONPATH=~/Code/leap/thandy/lib/ expect -c "spawn python ../../thandy/lib/thandy/SignerCLI.py \
         makebundle \
         --keyid=$1 \
@@ -185,74 +177,59 @@ declare -A scripts
 short_desc=(
     ["eip"]=""
     ["launcher"]=""
-    ["leap"]=""
-    ["leap_pycommon"]=""
     ["libBoost"]=""
     ["libOpenSSL"]=""
     ["libPySide"]=""
     ["OpenSSL"]=""
     ["PyDeps"]=""
     ["PySide"]=""
-    ["thandy"]=""
 )
 
 long_desc=(
-    ["eip"]=""
-    ["launcher"]=""
-    ["leap"]=""
-    ["leap_pycommon"]=""
-    ["libBoost"]=""
-    ["libOpenSSL"]=""
-    ["libPySide"]=""
-    ["OpenSSL"]=""
-    ["PyDeps"]=""
-    ["PySide"]=""
-    ["thandy"]=""
+    ["eip-win"]=""
+    ["launcher-win"]=""
+    ["libBoost-win"]=""
+    ["libOpenSSL-win"]=""
+    ["libPySide-win"]=""
+    ["OpenSSL-win"]=""
+    ["PyDeps-win"]=""
+    ["PySide-win"]=""
 )
 
 versions=(
-    ["eip"]=1,1
-    ["launcher"]=1,2
-    ["leap"]=1,5
-    ["leap_pycommon"]=1,3
-    ["libBoost"]=1,1
-    ["libOpenSSL"]=1,1
-    ["libPySide"]=1,1
-    ["OpenSSL"]=1,1
-    ["PyDeps"]=1,1
-    ["PySide"]=1,1
-    ["thandy"]=1,2
+    ["eip-win"]=1,2
+    ["launcher-win"]=1,8
+    ["libBoost-win"]=1,7
+    ["libOpenSSL-win"]=1,2
+    ["libPySide-win"]=1,2
+    ["OpenSSL-win"]=1,2
+    ["PyDeps-win"]=1,5
+    ["PySide-win"]=1,2
 )
 
 versions_str=(
-    ["eip"]="1.1"
-    ["launcher"]="1.2"
-    ["leap"]="1.5"
-    ["leap_pycommon"]="1.3"
-    ["libBoost"]="1.1"
-    ["libOpenSSL"]="1.1"
-    ["libPySide"]="1.1"
-    ["OpenSSL"]="1.1"
-    ["PyDeps"]="1.1"
-    ["PySide"]="1.1"
-    ["thandy"]="1.2"
+    ["eip-win"]="1.2"
+    ["launcher-win"]="1.8"
+    ["libBoost-win"]="1.7"
+    ["libOpenSSL-win"]="1.2"
+    ["libPySide-win"]="1.2"
+    ["OpenSSL-win"]="1.2"
+    ["PyDeps-win"]="1.5"
+    ["PySide-win"]="1.2"
 )
 
 scripts=(
-    ["eip"]=""
-    ["launcher"]="['executablelauncher.py',['postinst']]"
-    ["leap"]=""
-    ["leap_pycommon"]=""
-    ["libBoost"]=""
-    ["libOpenSSL"]=""
-    ["libPySide"]=""
-    ["OpenSSL"]=""
-    ["PyDeps"]=""
-    ["PySide"]=""
-    ["thandy"]=""
+    ["eip-win"]=""
+    ["launcher-win"]=""
+    ["libBoost-win"]=""
+    ["libOpenSSL-win"]=""
+    ["libPySide-win"]=""
+    ["OpenSSL-win"]=""
+    ["PyDeps-win"]=""
+    ["PySide-win"]=""
 )
 
-packages="eip launcher leap leap_pycommon libBoost libOpenSSL libPySide OpenSSL PyDeps PySide thandy"
+packages="eip-win launcher-win libBoost-win libOpenSSL-win libPySide-win OpenSSL-win PyDeps-win PySide-win"
 comma_packages=${packages// /,}
 
 stty -echo
@@ -266,6 +243,7 @@ echo "Cleaning all the pyc, and emacs backup files"
 cleanAll
 
 for i in ${packages}; do
+    mkdir $i || true
     if [ -d $i ]; then
         echo "Creating thp config for $i"
         createThpConfig $i ${scripts[$i]}
@@ -278,7 +256,9 @@ for i in ${packages}; do
     fi
 done
 
-createBundleConfig "LEAPClient-linux" "1,2" "/bundleinfo/LEAPClient/LEAPClient-1.2.txt" ${comma_packages}
+final_comma_packages=${comma_packages}",leap,thandy,leap_pycommon"
+
+createBundleConfig "LEAPClient-windows" "1,2" "/bundleinfo/LEAPClient-win/LEAPClient-win-1.2.txt" ${final_comma_packages}
 makeBundle oy0 LEAPClient
 insertAll
 timestamp
