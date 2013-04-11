@@ -145,7 +145,6 @@ function makeBundle {
     # $2 bundle name
     bundle_config=$(echo $2*_bundle.cfg)
     packages=$(echo */*.txt)" "$(echo ../linux/{leap,thandy,leap_pycommon}/*.txt)
-    echo "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ${packages}"
     PYTHONPATH=~/Code/leap/thandy/lib/ expect -c "spawn python ../../thandy/lib/thandy/SignerCLI.py \
         makebundle \
         --keyid=$1 \

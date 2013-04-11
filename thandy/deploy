@@ -1,0 +1,133 @@
+Thandy keys
+===========
+
+For Thandy to work properly, there are a series of keys that need to
+be created.
+
+All of these sections assume you have run the following commands:
+
+git clone <URL/thandy.git>
+cd thandy
+sudo python setup.py install
+
+Master keys
+-----------
+
+There should be 3 master keys that will have a "master /meta/keys.txt"
+role, these keys should live in 3 different places and be owned by 3
+different people.
+
+Master key creation
+-------------------
+
+These commands are supposed to be executed in each master key owner's
+machine.
+
+mkdir thandy_keys
+THANDY_HOME=thandy_keys thandy-pk keygen
+THANDY_HOME=thandy_keys thandy-pk addrole <keyid> master /meta/keys.txt
+THANDY_HOME=thandy_keys thandy-pk dumpkey > thandy_keys/<nick>.thandypub
+
+Mail the repo admin the <nick>.thandypub file gpg encrypted and signed.
+
+The secret_keys file that will be in the thandy_keys directory should
+be kept offline and will only be needed to sign the keys.txt file
+(more on that later).
+
+Timestamp key
+-------------
+
+Thandy's repository needs to be timestamp'ed periodically through a
+specific key. This key needs to be online where the main repo lives.
+
+The timestamp key generation will be done by the repo admin.
+
+Timestamp key creation
+----------------------
+
+THANDY_HOME=thandy_keys thandy-pk keygen
+THANDY_HOME=thandy_keys thandy-pk addrole <keyid> timestamp /meta/timestamp.tx
+
+Mirrors
+-------
+
+Thandy supports multiple mirrors out of the box. This key should be
+kept offline since it's only needed when adding a new mirror.
+
+Mirrors key creation
+--------------------
+
+THANDY_HOME=thandy_keys thandy-pk keygen
+THANDY_HOME=thandy_keys thandy-pk addrole <keyid> mirrors /meta/mirrors.txt
+
+Bundles and packages
+--------------------
+
+Thandy is designed to be able to distribute responsibilities for
+signing packages and bundles to multiple people. For LEAP's case, we
+will probably have just one person in charge of all of them.
+
+Eventually, if a specific person in charge of a specific package or
+set of them, we can add roles to it gradually, and specific to their
+assigned tasks.
+
+Bundles and packages key creation
+---------------------------------
+
+THANDY_HOME=thandy_keys thandy-pk keygen
+THANDY_HOME=thandy_keys thandy-pk addrole <keyid> package /pkginfo/**
+THANDY_HOME=thandy_keys thandy-pk addrole <keyid> bundle /bundleinfo/**
+
+Repository deployment
+=====================
+
+To properly deploy a repository, a couple of steps need to be followed:
+
+1) Three people will be the holders of the master keys (master1,
+master2, and master3). These people need to create their keys as
+specified previously and export them.
+
+2) The repository maintainer will create the packages, bundles,
+mirrors and timestamp keys. He will export them without their secrets
+and create a key list.
+
+3) This key list will be sent to all the master key holders, where
+they will sign it and send it back to the repo maintainer along with
+their dumped public key.
+
+4) The repo maintainer will create a keys.txt file with the key list
+and the three signatures.
+
+5) He will export the timestamp key with its secret to
+THANDY_HOME/timestamp_key
+
+6) He will create a mirror list using the mirror key (probably
+automatically selected by thandy if it's the only one with that role).
+
+7) He will add the keys.txt and mirrors.txt files and add them to
+path/to/repo/meta/
+
+8) After this point, the repo maintainer can use the thandy-server
+command (specifying THANDY_HOME if needed) to create a timestamp, and
+add packages or bundles as they are created.
+
+9) The server deployment should be done through rsync over ssh or a
+similarly secure method. The only things that are needed to live in
+the server is the previously exported timestamp_key, and all the repo
+with its meta, pkginfo, bundleinfo, and data directories. No other
+keys need to be online.
+
+10) A cron job to automatically generate a timestamp should be added
+in the main server.
+
+Distribution
+============
+
+For any user to be able to use this repository, the only things needed
+are the preload_keys file living somewhere the user will use as
+THANDY_HOME, and the signed mirrors.txt file in a place where the repo
+will get synchronized according to what the user wants to install, so
+that Thandy knows where to install it from.
+
+All this is transparent to the LEAPClient bundle users since it's all
+handled through the launcher.
